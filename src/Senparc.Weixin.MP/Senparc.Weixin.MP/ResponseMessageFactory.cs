@@ -36,6 +36,9 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
 
 using System;
 using System.Xml.Linq;
+using Senparc.NeuChar;
+using Senparc.NeuChar.Entities;
+using Senparc.NeuChar.Helpers;
 using Senparc.Weixin.Exceptions;
 using Senparc.Weixin.MP.Entities;
 using Senparc.Weixin.MP.Helpers;
@@ -55,7 +58,7 @@ namespace Senparc.Weixin.MP
         //  <MsgType>text</MsgType>
         //  <Content><![CDATA[您刚才发送了文字信息：中文
         //您还可以发送【位置】【图片】【语音】信息，查看不同格式的回复。
-        //SDK官方地址：http://sdk.weixin.senparc.com]]></Content>
+        //SDK官方地址：https://sdk.weixin.senparc.com]]></Content>
         //  <FuncFlag>0</FuncFlag>
         //</xml>
 
@@ -91,13 +94,13 @@ namespace Senparc.Weixin.MP
                     case ResponseMsgType.News:
                         responseMessage = new ResponseMessageNews();
                         break;
-					case ResponseMsgType.Transfer_Customer_Service:
-						responseMessage = new ResponseMessageTransfer_Customer_Service();
-						break;
+                    case ResponseMsgType.Transfer_Customer_Service:
+                        responseMessage = new ResponseMessageTransfer_Customer_Service();
+                        break;
                     default:
                         throw new UnknownRequestMsgTypeException(string.Format("MsgType：{0} 在ResponseMessageFactory中没有对应的处理程序！", msgType), new ArgumentOutOfRangeException());
                 }
-                EntityHelper.FillEntityWithXml(responseMessage, doc);
+                Senparc.NeuChar.Helpers.EntityHelper.FillEntityWithXml(responseMessage, doc);
             }
             catch (ArgumentException ex)
             {
@@ -124,7 +127,7 @@ namespace Senparc.Weixin.MP
         /// <returns></returns>
         public static XDocument ConvertEntityToXml(ResponseMessageBase entity)
         {
-            return EntityHelper.ConvertEntityToXml(entity);
+            return Senparc.NeuChar.Helpers.EntityHelper.ConvertEntityToXml(entity);
         }
     }
 }

@@ -13,18 +13,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-
-#if NET45
 using System.Web;
-using System.Web.Mvc;
-#else
+
 using Microsoft.AspNetCore.Mvc;
-#endif
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Senparc.Weixin.MP.CoreSample.Controllers
 {
     public class BaseController : Controller
     {
+        protected string AppId
+        {
+            get
+            {
+                return Config.SenparcWeixinSetting.WeixinAppId;//与微信公众账号后台的AppId设置保持一致，区分大小写。
+            }
+        }
 
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            ViewData["CacheType"] = CO2NET.Cache.CacheStrategyFactory.GetObjectCacheStrategyInstance().GetType().Name;
+            base.OnActionExecuting(context);
+        }
     }
 }
