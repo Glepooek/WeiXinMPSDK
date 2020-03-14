@@ -1,7 +1,7 @@
 ﻿#region Apache License Version 2.0
 /*----------------------------------------------------------------
 
-Copyright 2018 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
+Copyright 2020 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 except in compliance with the License. You may obtain a copy of the License at
@@ -19,7 +19,7 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
 #endregion Apache License Version 2.0
 
 /*----------------------------------------------------------------
-    Copyright (C) 2018 Senparc
+    Copyright (C) 2020 Senparc
     
     文件名：CommonApi.cs
     文件功能描述：通用接口(用于和微信服务器通讯，一般不涉及自有网站服务器的通讯)
@@ -50,6 +50,11 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
 
     修改标识：Senparc - 20180928
     修改描述：添加Clear_quota
+
+    修改标识：Senparc - 20191206
+    修改描述：CommonApi.Token() 方法设置异常抛出机制
+
+
 ----------------------------------------------------------------*/
 
 /*
@@ -57,14 +62,15 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
     
  */
 
-using System.Threading.Tasks;
 using Senparc.CO2NET.Extensions;
 using Senparc.CO2NET.HttpUtility;
 using Senparc.NeuChar;
 using Senparc.Weixin.CommonAPIs;
 using Senparc.Weixin.Entities;
+using Senparc.Weixin.Exceptions;
 using Senparc.Weixin.MP.Containers;
 using Senparc.Weixin.MP.Entities;
+using System.Threading.Tasks;
 
 namespace Senparc.Weixin.MP.CommonAPIs
 {
@@ -90,7 +96,14 @@ namespace Senparc.Weixin.MP.CommonAPIs
             var url = string.Format(Config.ApiMpHost + "/cgi-bin/token?grant_type={0}&appid={1}&secret={2}",
                                     grant_type.AsUrlData(), appid.AsUrlData(), secret.AsUrlData());
 
-            AccessTokenResult result = Get.GetJson<AccessTokenResult>(url);//此处为最原始接口，不再使用重试获取的封装
+            AccessTokenResult result = Get.GetJson<AccessTokenResult>(CommonDI.CommonSP, url);//此处为最原始接口，不再使用重试获取的封装
+
+            if (Config.ThrownWhenJsonResultFaild && result.errcode != ReturnCode.请求成功)
+            {
+                var unregisterAppIdEx = new UnRegisterAppIdException(null, $"尚无已经注册的AppId，请先使用AccessTokenContainer.Register完成注册（全局执行一次即可）！模块：{NeuChar.PlatformType.WeChat_OfficialAccount}");
+                throw unregisterAppIdEx;//抛出异常
+            }
+
             return result;
         }
 
@@ -190,7 +203,7 @@ namespace Senparc.Weixin.MP.CommonAPIs
 
         #endregion
 
-#if !NET35 && !NET40
+
         #region 异步方法
 
         /// <summary>
@@ -207,7 +220,14 @@ namespace Senparc.Weixin.MP.CommonAPIs
             var url = string.Format(Config.ApiMpHost + "/cgi-bin/token?grant_type={0}&appid={1}&secret={2}",
                                     grant_type.AsUrlData(), appid.AsUrlData(), secret.AsUrlData());
 
-            AccessTokenResult result = await Get.GetJsonAsync<AccessTokenResult>(url);//此处为最原始接口，不再使用重试获取的封装
+            AccessTokenResult result = await Get.GetJsonAsync<AccessTokenResult>(CommonDI.CommonSP, url);//此处为最原始接口，不再使用重试获取的封装
+
+            if (Config.ThrownWhenJsonResultFaild && result.errcode != ReturnCode.请求成功)
+            {
+                var unregisterAppIdEx = new UnRegisterAppIdException(null, $"尚无已经注册的AppId，请先使用AccessTokenContainer.Register完成注册（全局执行一次即可）！模块：{NeuChar.PlatformType.WeChat_OfficialAccount}");
+                throw unregisterAppIdEx;//抛出异常
+            }
+
             return result;
         }
 
@@ -225,9 +245,9 @@ namespace Senparc.Weixin.MP.CommonAPIs
                var url = string.Format(Config.ApiMpHost + "/cgi-bin/user/info?access_token={0}&openid={1}",
                                        accessToken.AsUrlData(), openId.AsUrlData());
                var result = CommonJsonSend.SendAsync<WeixinUserInfoResult>(null, url, null, CommonJsonSendType.GET);
-               return await result;
+               return await result.ConfigureAwait(false);
 
-           }, accessTokenOrAppId);
+           }, accessTokenOrAppId).ConfigureAwait(false);
         }
 
 
@@ -241,7 +261,7 @@ namespace Senparc.Weixin.MP.CommonAPIs
         [ApiBind(NeuChar.PlatformType.WeChat_OfficialAccount, "CommonApi.GetTicketAsync", true)]
         public static async Task<JsApiTicketResult> GetTicketAsync(string appId, string secret, string type = "jsapi")
         {
-            var accessToken = await AccessTokenContainer.TryGetAccessTokenAsync(appId, secret);
+            var accessToken = await AccessTokenContainer.TryGetAccessTokenAsync(appId, secret).ConfigureAwait(false);
             return GetTicketByAccessToken(accessToken, type);
         }
 
@@ -260,9 +280,9 @@ namespace Senparc.Weixin.MP.CommonAPIs
                                         accessToken.AsUrlData(), type.AsUrlData());
 
                 var result = CommonJsonSend.SendAsync<JsApiTicketResult>(null, url, null, CommonJsonSendType.GET);
-                return await result;
+                return await result.ConfigureAwait(false);
 
-            }, accessTokenOrAppId);
+            }, accessTokenOrAppId).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -277,9 +297,9 @@ namespace Senparc.Weixin.MP.CommonAPIs
             {
                 var url = string.Format(Config.ApiMpHost + "/cgi-bin/getcallbackip?access_token={0}", accessToken.AsUrlData());
 
-                return await CommonJsonSend.SendAsync<GetCallBackIpResult>(null, url, null, CommonJsonSendType.GET);
+                return await CommonJsonSend.SendAsync<GetCallBackIpResult>(null, url, null, CommonJsonSendType.GET).ConfigureAwait(false);
 
-            }, accessTokenOrAppId);
+            }, accessTokenOrAppId).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -300,13 +320,12 @@ namespace Senparc.Weixin.MP.CommonAPIs
                     appid = appId
                 };
 
-                return await CommonJsonSend.SendAsync<WxJsonResult>(null, urlFormat, data, timeOut: timeOut);
+                return await CommonJsonSend.SendAsync<WxJsonResult>(null, urlFormat, data, timeOut: timeOut).ConfigureAwait(false);
 
-            }, accessTokenOrAppId);
+            }, accessTokenOrAppId).ConfigureAwait(false);
         }
 
         #endregion
-#endif
 
     }
 }
