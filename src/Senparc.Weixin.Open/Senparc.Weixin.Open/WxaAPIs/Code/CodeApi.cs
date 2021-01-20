@@ -1,7 +1,7 @@
 ﻿#region Apache License Version 2.0
 /*----------------------------------------------------------------
 
-Copyright 2020 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
+Copyright 2021 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 except in compliance with the License. You may obtain a copy of the License at
@@ -19,7 +19,7 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
 #endregion Apache License Version 2.0
 
 /*----------------------------------------------------------------
-    Copyright (C) 2020 Senparc
+    Copyright (C) 2021 Senparc
     
     文件名：CodeApi.cs
     文件功能描述：代码管理
@@ -40,6 +40,9 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
     修改描述：v4.7.102.1 修改 GetAuditStatus() 方法 auditid 参数类型（int -> long)
 
     修改标识：mc7246 - 20200318
+    修改描述：v4.7.401 第三方小程序，提交审核接口更新
+
+    修改标识：mc7246 - 20200810
     修改描述：v4.7.401 第三方小程序，提交审核接口更新
 
 ----------------------------------------------------------------*/
@@ -202,6 +205,22 @@ namespace Senparc.Weixin.Open.WxaAPIs
 
             return CommonJsonSend.Send<GetAuditResultJson>(null, url, null, CommonJsonSendType.GET, timeOut);
         }
+		
+        /// <summary>
+        /// 小程序审核撤回
+        /// 注意：单个帐号每天审核撤回次数最多不超过 1 次，一个月不超过 10 次
+        /// </summary>
+        /// <param name="accessToken">从第三方平台获取到的该小程序授权</param>
+        /// <param name="timeOut"></param>
+        /// <returns></returns>
+        [ApiBind(NeuChar.PlatformType.WeChat_Open, "CodeApi.UndoCodeAudit", true)]
+        public static CodeResultJson UndoCodeAudit(string accessToken, int timeOut = Config.TIME_OUT)
+        {
+            var url = string.Format(Config.ApiMpHost + "/wxa/undocodeaudit?access_token={0}", accessToken.AsUrlData());
+            object data = new { };
+            return CommonJsonSend.Send<CodeResultJson>(null, url, data, CommonJsonSendType.GET, timeOut);
+        }
+		
         /// <summary>
         /// 发布已通过审核的小程序
         /// </summary>
@@ -526,6 +545,22 @@ namespace Senparc.Weixin.Open.WxaAPIs
 
             return await CommonJsonSend.SendAsync<GetAuditResultJson>(null, url, data, CommonJsonSendType.GET, timeOut).ConfigureAwait(false);
         }
+		
+        /// <summary>
+        /// 小程序审核撤回
+        /// 注意：单个帐号每天审核撤回次数最多不超过 1 次，一个月不超过 10 次
+        /// </summary>
+        /// <param name="accessToken">从第三方平台获取到的该小程序授权</param>
+        /// <param name="timeOut"></param>
+        /// <returns></returns>
+        [ApiBind(NeuChar.PlatformType.WeChat_Open, "CodeApi.UndoCodeAuditAsync", true)]
+        public static async Task<CodeResultJson> UndoCodeAuditAsync(string accessToken, int timeOut = Config.TIME_OUT)
+        {
+            var url = string.Format(Config.ApiMpHost + "/wxa/undocodeaudit?access_token={0}", accessToken.AsUrlData());
+            object data = new { };
+            return await CommonJsonSend.SendAsync<CodeResultJson>(null, url, data, CommonJsonSendType.GET, timeOut).ConfigureAwait(false);
+        }
+		
         /// <summary>
         /// 发布已通过审核的小程序
         /// </summary>

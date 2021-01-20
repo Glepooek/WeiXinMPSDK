@@ -1,7 +1,7 @@
 ﻿#region Apache License Version 2.0
 /*----------------------------------------------------------------
 
-Copyright 2020 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
+Copyright 2021 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 except in compliance with the License. You may obtain a copy of the License at
@@ -19,7 +19,7 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
 #endregion Apache License Version 2.0
 
 /*----------------------------------------------------------------
-    Copyright (C) 2020 Senparc
+    Copyright (C) 2021 Senparc
     
     文件名：WxOpenMessageHandler.cs
     文件功能描述：小程序MessageHandler
@@ -35,9 +35,12 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
     
     修改标识：Senparc - 20190917
     修改描述：v3.6.0 支持新版本 MessageHandler 和 WeixinContext，支持使用分布式缓存储存上下文消息
-      
+
     修改标识：Senparc - 20200303
     修改描述：v3.8.304.1 优化 MessageHandler 的异步方法调用
+      
+    修改标识：Senparc - 2020909
+    修改描述：v3.8.511 MessageHandler 增加异步方法
 
 ----------------------------------------------------------------*/
 
@@ -259,8 +262,33 @@ namespace Senparc.Weixin.WxOpen.MessageHandlers
         #endregion
 
         #region 异步方法
-
-
+        /// <summary>
+        /// 自动判断默认异步方法调用（在没有override的情况下调用的默认方法）
+        /// </summary>
+        /// <param name="requestMessage">requestMessage</param>
+        /// <param name="syncMethod">同名的同步方法(DefaultMessageHandlerAsyncEvent值为SelfSynicMethod时调用)</param>
+        /// <returns></returns>
+        private async Task<IResponseMessageBase> DefaultAsyncMethod(IRequestMessageBase requestMessage, Func<IResponseMessageBase> syncMethod)
+        {
+            switch (base.DefaultMessageHandlerAsyncEvent)
+            {
+                case DefaultMessageHandlerAsyncEvent.DefaultResponseMessageAsync:
+                    //返回默认信息
+                    return await DefaultResponseMessageAsync(requestMessage).ConfigureAwait(false);
+                case DefaultMessageHandlerAsyncEvent.SelfSynicMethod:
+                    //返回同步信息
+                    return await Task.Run(syncMethod).ConfigureAwait(false);
+                default:
+                    throw new MessageHandlerException($"DefaultMessageHandlerAsyncEvent 类型未作处理：{base.DefaultMessageHandlerAsyncEvent.ToString()}");
+            }
+        }
+        /// <summary>
+        /// 【异步方法】认返回消息（当任何OnXX消息没有被重写，都将自动返回此默认消息）
+        /// </summary>
+        public virtual async Task<IResponseMessageBase> DefaultResponseMessageAsync(IRequestMessageBase requestMessage)
+        {
+            return await Task.Run(() => DefaultResponseMessage(requestMessage)).ConfigureAwait(false);
+        }
         /// <summary>
         /// 执行微信请求
         /// </summary>
@@ -281,7 +309,7 @@ namespace Senparc.Weixin.WxOpen.MessageHandlers
                     {
                         //SenparcTrace.SendCustomLog("wxTest-request", RequestMessage.ToJson());
                         ResponseMessage = await CurrentMessageHandlerNode.ExecuteAsync(RequestMessage, this, weixinAppId).ConfigureAwait(false) ??
-                                OnTextRequest(RequestMessage as RequestMessageText);
+                              await OnTextRequestAsync(RequestMessage as RequestMessageText);
                         //SenparcTrace.SendCustomLog("wxTest-response", ResponseMessage.ToJson());
                         //SenparcTrace.SendCustomLog("WxOpen RequestMsgType", ResponseMessage.ToJson());
 
@@ -291,7 +319,7 @@ namespace Senparc.Weixin.WxOpen.MessageHandlers
                 case RequestMsgType.Image:
                     {
                         ResponseMessage = await CurrentMessageHandlerNode.ExecuteAsync(RequestMessage, this, weixinAppId).ConfigureAwait(false) ??
-                                OnImageRequest(RequestMessage as RequestMessageImage);
+                             await OnImageRequestAsync(RequestMessage as RequestMessageImage);
                     }
                     break;
                 case RequestMsgType.NeuChar:

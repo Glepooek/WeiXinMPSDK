@@ -22,9 +22,8 @@ For more than seven years, we have been keeping the project constantly updated, 
 If you like and hope us to continue to optimize this project, please give us a Star:)
 
 ## Notice 
-
->  :trophy: 《[2019-2020 Outstanding Contributors of Senparc Developer Community Shortlist](https://github.com/JeffreySu/WeiXinMPSDK/issues/2197)》 has been published. Please check and register the information before 30/6/2020 10:24 AM :smile:
-
+> 🍦 [file.api.weixin.qq.com Domain name officially disabled(2020.0.15)](https://developers.weixin.qq.com/community/develop/doc/0002245dcdc8c06f36fa6a47d56400), please update to the latest version! <br />
+>  :trophy: 《[2019-2020 Outstanding Contributors of Senparc Developer Community Shortlist](https://github.com/JeffreySu/WeiXinMPSDK/issues/2197)》 has been published. Please check and register the information before 30/6/2020 10:24 AM :smile: <br />
 > 🥇 .NET Core 3.1 [Senparc.Weixin SDK source code](/src) and [Demo](/Samples/netcore3.0-mvc) has been released!
 
 <img src="https://sdk.weixin.senparc.com/images/SenparcRobotsnapshoot.jpg" width="350" align="right">
@@ -661,7 +660,7 @@ License
 Apache License Version 2.0
 
 ```
-Copyright 2019 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
+Copyright 2021 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file 
 except in compliance with the License. You may obtain a copy of the License at

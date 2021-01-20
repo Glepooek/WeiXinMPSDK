@@ -1,7 +1,7 @@
 ﻿#region Apache License Version 2.0
 /*----------------------------------------------------------------
 
-Copyright 2020 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
+Copyright 2021 Jeffrey Su & Suzhou Senparc Network Technology Co.,Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 except in compliance with the License. You may obtain a copy of the License at
@@ -19,7 +19,7 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
 #endregion Apache License Version 2.0
 
 /*----------------------------------------------------------------
-    Copyright (C) 2020 Senparc
+    Copyright (C) 2021 Senparc
 
     文件名：AccessTokenContainer.cs
     文件功能描述：通用接口AccessToken容器，用于自动管理AccessToken，如果过期会重新获取
@@ -99,20 +99,15 @@ Detail: https://github.com/JeffreySu/WeiXinMPSDK/blob/master/license.md
 
 /* 异步单元测试：https://github.com/OpenSenparc/UnitTestBasket/blob/10017bff083223f63ee11c7b31c818b8c204f30d/UnitTestBasket/ThreadAndAsyncTests/FuncAsyncTests.cs#L17 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Senparc.Weixin.Cache;
-using Senparc.Weixin.Containers;
-using Senparc.Weixin.Exceptions;
-using Senparc.Weixin.MP.Entities;
-using Senparc.CO2NET.CacheUtility;
-using Senparc.Weixin.Entities;
-using Senparc.Weixin.MP.CommonAPIs;
-using Senparc.Weixin.Utilities.WeixinUtility;
 using Senparc.CO2NET.Extensions;
+using Senparc.Weixin.Containers;
+using Senparc.Weixin.Entities;
+using Senparc.Weixin.Exceptions;
+using Senparc.Weixin.MP.CommonAPIs;
+using Senparc.Weixin.MP.Entities;
+using Senparc.Weixin.Utilities.WeixinUtility;
+using System;
+using System.Threading.Tasks;
 
 namespace Senparc.Weixin.MP.Containers
 {
@@ -123,45 +118,9 @@ namespace Senparc.Weixin.MP.Containers
     public class AccessTokenBag : BaseContainerBag, IBaseContainerBag_AppId
     {
         public string AppId { get; set; }
-        //        {
-        //            get { return _appId; }
-        //#if NET35 || NET40
-        //            set { this.SetContainerProperty(ref _appId, value, "AppId"); }
-        //#else
-        //            set { this.SetContainerProperty(ref _appId, value); }
-        //#endif
-        //        }
-
         public string AppSecret { get; set; }
-        //        {
-        //            get { return _appSecret; }
-        //#if NET35 || NET40
-        //            set { this.SetContainerProperty(ref _appSecret, value, "AppSecret"); }
-        //#else
-        //            set { this.SetContainerProperty(ref _appSecret, value); }
-        //#endif
-        //        }
-
         public DateTimeOffset AccessTokenExpireTime { get; set; }
-        //        {
-        //            get { return _accessTokenExpireTime; }
-        //#if NET35 || NET40
-        //            set { this.SetContainerProperty(ref _accessTokenExpireTime, value, "AccessTokenExpireTime"); }
-        //#else
-        //            set { this.SetContainerProperty(ref _accessTokenExpireTime, value); }
-        //#endif
-        //        }
-
         public AccessTokenResult AccessTokenResult { get; set; }
-        //        {
-        //            get { return _accessTokenResult; }
-        //#if NET35 || NET40
-        //            set { this.SetContainerProperty(ref _accessTokenResult, value, "AccessTokenResult"); }
-        //#else
-        //            set { this.SetContainerProperty(ref _accessTokenResult, value); }
-        //#endif
-        //        }
-
         //private AccessTokenResult _accessTokenResult;
         //private DateTimeOffset _accessTokenExpireTime;
         //private string _appSecret;
@@ -291,6 +250,10 @@ namespace Senparc.Weixin.MP.Containers
 
             if (!name.IsNullOrEmpty())
             {
+                /*
+                 * 注意：此处会修改全局的 WeixinAppId 和 WeixinAppSecret 的值，如果小程序从这里注册（并且没有提供 name），就会影响到公众号的参数 
+                 * https://github.com/JeffreySu/WeiXinMPSDK/pull/2261/files
+                 */
                 Senparc.Weixin.Config.SenparcWeixinSetting.Items[name].WeixinAppId = appId;
                 Senparc.Weixin.Config.SenparcWeixinSetting.Items[name].WeixinAppSecret = appSecret;
             }
